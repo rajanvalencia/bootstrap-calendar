@@ -129,9 +129,49 @@
 
             $('#calendar').data('calendar').setDataSource(dataSource);
             $('#event-modal').modal('hide');
+            saveToDatabase(event);
+        }
+
+        function saveToDatabase(event) {
+
+            console.log(event);
+
+            var params = {
+                'event-name': event.name,
+                'event-location': event.location,
+                'event-start-date': new Date(event.startDate).toISOString().substring(0, 10),
+                'event-end-date': new Date(event.endDate).toISOString().substring(0, 10),
+                _token: $('input[name = _token]').val()
+            }
+
+            console.log(params);
+
+            $.ajax({
+                url: '/events',
+                method: 'POST',
+                data: params,
+                success: function (res) {
+
+                }
+            })
+        }
+
+        function getAllEvents() {
+            $.ajax({
+                url: '/events',
+                method: 'GET',
+                success: function (res) {
+                    allEvents = res;
+                    setCalendar(allEvents);
+                }
+            })
         }
 
         $(function () {
+            var dataSource = getAllEvents();
+        });
+
+        function setCalendar(allEvents) {
             var currentYear = new Date().getFullYear();
 
             $('#calendar').calendar({
@@ -151,6 +191,7 @@
                     editEvent({ startDate: e.startDate, endDate: e.endDate });
                 },
                 mouseOnDay: function (e) {
+                    console.log(e);
                     if (e.events.length > 0) {
                         var content = '';
 
@@ -179,6 +220,8 @@
                 dayContextMenu: function (e) {
                     $(e.element).popover('hide');
                 },
+                dataSource: allEvents
+                /*
                 dataSource: [
                     {
                         id: 0,
@@ -251,12 +294,13 @@
                         endDate: new Date(currentYear, 10, 17)
                     }
                 ]
+                */
             });
 
             $('#save-event').click(function () {
                 saveEvent();
             });
-        });
+        }
     </script>
 </body>
 
